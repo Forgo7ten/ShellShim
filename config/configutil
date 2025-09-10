@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# set -x
+
+config_dir=$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%x}}" )" && pwd)
+config_file=$config_dir/conf.profile
+
+if [ ! -f "$wprofile" ]; then
+    touch $config_file
+fi
+
+# read value form config file
+# param: key
+configutil_read_config() {
+    if [ -z $1 ]; then
+        return
+    fi
+    cat $config_file | grep "^$1=" | cut -d "=" -f2
+}
+
+# echo all config
+configutil_read_all_config() {
+    cat $config_file
+}
+
+# write key and value to config file
+# param1: key params2:value
+configutil_write_config() {
+    if [ $# -lt 2 ]; then
+        echo "need params: key value."
+        return
+    fi
+    original=$(configutil_read_config "$1")
+    if [ -z "$original" ]; then
+        echo "$1=\"$2\"" >>$config_file
+    else
+        if [ $(uname) = "Darwin" ]; then
+            sed -i "" -e "s#^$1=$original#$1=\"$2\"#" $config_file
+        else
+            sed -i "s#^$1=$original#$1=\"$2\"#" $config_file
+        fi
+    fi
+}
