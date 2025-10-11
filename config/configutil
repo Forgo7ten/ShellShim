@@ -15,12 +15,12 @@ configutil_read_config() {
     if [ -z $1 ]; then
         return
     fi
-    cat $config_file | grep "^$1=" | cut -d "=" -f2
+    cat $config_file 2>/dev/null | grep "^$1=" | cut -d "=" -f2
 }
 
 # echo all config
 configutil_read_all_config() {
-    cat $config_file
+    cat $config_file 2>/dev/null
 }
 
 # write key and value to config file
