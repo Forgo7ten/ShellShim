@@ -4,7 +4,7 @@ if [ `uname` = "Darwin" ];then
     export ANDROID_HOME="$HOME/Library/Android/sdk"
 else
     # Linux
-    export ANDROID_HOME="$HOME/Android/Sdk/"
+    export ANDROID_HOME="$HOME/Android/Sdk"
 fi
 # 配置sdk及ndk
 export PATH=$ANDROID_HOME/tools:$PATH
