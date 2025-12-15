@@ -14,19 +14,9 @@ mynohup() {
     echo "Output redirected to $nohup_log"
 }
 
-
-## 获取Apk文件的包名
-### param1: Apk文件路径
-_apk_complete() {
-    local cur=${COMP_WORDS[COMP_CWORD]}
-    COMPREPLY=($(compgen -W "$(ls *.apk)" -- "$cur"))
-}
-
 function pkg(){
     aapt dump badging $1 | grep "package: name"
 }
-complete -F _apk_complete pkg
-
 
 ## 配置jadx
 if [ -n "$JADX_HOME" ]; then
@@ -40,7 +30,6 @@ if [ -n "$JADX_HOME" ]; then
             nohup $__JADX_EXE "$1" >/dev/null 2>&1 &
         fi
     }
-    complete -F _apk_complete jad
 fi
 
 ## 配置jeb
@@ -74,6 +63,91 @@ if [ -n "$IDA_HOME" ]; then
         fi
     }
 fi
+
+## 配置命令补全
+if [[ -n "$ZSH_VERSION" ]]; then
+
+    # 1. 定义补全函数
+    _apk_zsh_complete() {
+        _files -g "*.apk"
+    }
+
+    _jad_zsh_complete() {
+        _files -g "*.{apk,dex,jar}"
+    }
+
+    _jeb_zsh_complete() {
+        _files -g "*.{apk,dex,jar,jdb2}"
+    }
+
+    _ida_zsh_complete() {
+        # 匹配指定后缀 或 无后缀文件(排除带点文件)
+        _files -g "*.{so,exe,i64}" -g "^*.*"
+    }
+
+    # 2. 注册补全 (仅当命令存在时)
+    # command -v 会检查 函数、别名、PATH中的二进制文件
+    if command -v pkg >/dev/null; then
+        compdef _apk_zsh_complete pkg
+    fi
+
+    if command -v jad >/dev/null; then
+        compdef _jad_zsh_complete jad
+    fi
+
+    if command -v jeb >/dev/null; then
+        compdef _jeb_zsh_complete jeb
+    fi
+
+    if command -v ida >/dev/null; then
+        compdef _ida_zsh_complete ida
+    fi
+
+# =============================================================================
+# Bash 分支：仅使用 bash-completion (_filedir)
+# =============================================================================
+elif [[ -n "$BASH_VERSION" ]]; then
+
+    # 检查 bash-completion 的核心函数 _filedir 是否存在
+    if declare -f _filedir >/dev/null; then
+
+        # 1. 定义补全函数
+        _apk_bash_complete() {
+            _filedir 'apk'
+        }
+
+        _jad_bash_complete() {
+            _filedir '@(apk|dex|jar)'
+        }
+
+        _jeb_bash_complete() {
+            _filedir '@(apk|dex|jar|jdb2)'
+        }
+
+        _ida_bash_complete() {
+            _filedir '@(so|exe|i64)'
+        }
+
+        # 2. 注册补全 (同样仅当命令存在时注册，保持逻辑一致性)
+        if command -v pkg >/dev/null; then complete -F _apk_bash_complete pkg; fi
+        if command -v jad >/dev/null; then complete -F _jad_bash_complete jad; fi
+        if command -v jeb >/dev/null; then complete -F _jeb_bash_complete jeb; fi
+        if command -v ida >/dev/null; then complete -F _ida_bash_complete ida; fi
+
+    else
+        # =================================================
+        # 补全未生效提示
+        # =================================================
+        RED='\033[0;31m'
+        NC='\033[0m' # No Color
+        
+        echo -e "${RED}[Warning] Shell Completion Not Loaded:${NC}"
+        echo "    Current shell is Bash, but 'bash-completion' package is not installed or sourced."
+        echo "    Auto-completion for 'pkg', 'jad', and 'ida' will be disabled."
+        echo "    To fix this, please install 'bash-completion' (e.g., apt install bash-completion)."
+    fi
+fi
+
 
 pyhttp(){
     # 如果没有传入端口号，使用默认端口7788
