@@ -87,20 +87,21 @@ if [[ -n "$ZSH_VERSION" ]]; then
 
     # 2. 注册补全 (仅当命令存在时)
     # command -v 会检查 函数、别名、PATH中的二进制文件
+    # 忽略错误（兼容zinit in macos）
     if command -v pkg >/dev/null; then
-        compdef _apk_zsh_complete pkg
+        compdef _apk_zsh_complete pkg 2>/dev/null
     fi
 
     if command -v jad >/dev/null; then
-        compdef _jad_zsh_complete jad
+        compdef _jad_zsh_complete jad 2>/dev/null
     fi
 
     if command -v jeb >/dev/null; then
-        compdef _jeb_zsh_complete jeb
+        compdef _jeb_zsh_complete jeb 2>/dev/null
     fi
 
     if command -v ida >/dev/null; then
-        compdef _ida_zsh_complete ida
+        compdef _ida_zsh_complete ida 2>/dev/null
     fi
 
 # =============================================================================
